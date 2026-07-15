@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     smoothWheel: true,
   });
 
+  // Prevent scrollbar layout shift by keeping scrollbar but stopping scroll during load
+  lenis.stop();
+
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
@@ -34,32 +37,41 @@ document.addEventListener("DOMContentLoaded", () => {
     el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
   });
 
+  // Set initial states to prevent jump
+  gsap.set('.hero-img', { scale: 1.2 });
+
   // Preloader Animation
   const tlLoader = gsap.timeline({
     onComplete: () => {
       document.body.classList.remove('loading');
-      initHeroAnimations();
+      lenis.start(); // Re-enable scroll when loader finishes
     }
   });
 
   tlLoader
-    .to('.loader-progress', { width: '100%', duration: 1.5, ease: 'power3.inOut' })
-    .to('.loader', { yPercent: -100, duration: 1, ease: 'expo.inOut' }, "+=0.2");
+    .to('.loader-progress', { width: '100%', duration: 1.2, ease: 'power4.inOut' })
+    .to('.loader-track', { scaleX: 0, opacity: 0, duration: 0.6, ease: 'power3.inOut', transformOrigin: 'right' })
+    .to('.loader', { 
+      yPercent: -100, 
+      duration: 1.5, 
+      ease: 'expo.inOut',
+      borderBottomLeftRadius: '50vw',
+      borderBottomRightRadius: '50vw'
+    }, "-=0.1")
+    .add(initHeroAnimations, "-=1.2"); // Start hero animation earlier for overlap
 
   // Hero Animations
   function initHeroAnimations() {
     const tlHero = gsap.timeline();
     
     tlHero
-      .fromTo('.hero-img', 
-        { scale: 1.2 }, 
-        { scale: 1, duration: 2, ease: 'power3.out' }, 0)
+      .to('.hero-img', { scale: 1, duration: 2.5, ease: 'power3.out' }, 0)
       .to('.hero-title', { 
         y: '0%', 
-        duration: 1.2, 
-        stagger: 0.1, 
+        duration: 1.5, 
+        stagger: 0.15, 
         ease: 'expo.out' 
-      }, "-=1.5")
+      }, "-=2.2")
       .fromTo('.hero-subtitle', 
         { y: 30, opacity: 0 }, 
         { y: 0, opacity: 1, duration: 1, ease: 'power2.out' }, "-=0.8")
