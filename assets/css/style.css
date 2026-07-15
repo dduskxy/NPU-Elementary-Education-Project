@@ -1,0 +1,13 @@
+/* ==========================================================================
+   STYLE.CSS — Pittayasuksa School Design System
+   Master entry point. Imports all layers in cascade order.
+
+   Layer order:
+   1. base.css     — Reset, tokens, typography, utilities, accessibility
+   2. layout.css   — Container, header, footer, sections, grids
+   3. components.css — All UI components: buttons, cards, forms, etc.
+   ========================================================================== */
+
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
