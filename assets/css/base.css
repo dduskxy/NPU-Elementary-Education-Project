@@ -14,11 +14,18 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
 
 html {
   font-size: 16px;
   background-color: var(--color-bg);
+  overflow-x: hidden;
 }
 
 body {
@@ -59,8 +66,8 @@ img {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
-  transform: translate(-50%, -50%);
   transition: width 0.3s ease, height 0.3s ease;
+  will-change: transform, width, height;
 }
 
 .cursor.active {
@@ -68,6 +75,12 @@ img {
   height: 40px;
   background-color: rgba(255, 255, 255, 0.2);
   border: 1px solid #ffffff;
+}
+
+@media (pointer: coarse) {
+  .cursor {
+    display: none !important;
+  }
 }
 
 /* Loader */

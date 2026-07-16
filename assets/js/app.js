@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize Lenis Smooth Scroll
   const lenis = new Lenis({
-    duration: 1.5,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    lerp: 0.07, // Buttery smooth momentum
+    wheelMultiplier: 1,
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
@@ -22,20 +22,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Custom Cursor
   const cursor = document.querySelector('.cursor');
-  document.addEventListener('mousemove', (e) => {
-    gsap.to(cursor, {
-      x: e.clientX,
-      y: e.clientY,
-      duration: 0.1,
-      ease: 'power2.out'
-    });
-  });
+  
+  if (window.matchMedia("(pointer: fine)").matches) {
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+    
+    const xTo = gsap.quickTo(cursor, "x", {duration: 0.15, ease: "power3"});
+    const yTo = gsap.quickTo(cursor, "y", {duration: 0.15, ease: "power3"});
 
-  const interactiveElements = document.querySelectorAll('a, button, .gallery-item');
-  interactiveElements.forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('active'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
-  });
+    document.addEventListener('mousemove', (e) => {
+      xTo(e.clientX);
+      yTo(e.clientY);
+    });
+
+    const interactiveElements = document.querySelectorAll('a, button, .gallery-item');
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+    });
+  } else {
+    if (cursor) {
+      cursor.style.display = 'none';
+    }
+  }
 
   // Set initial states to prevent jump
   gsap.set('.hero-img', { scale: 1.2 });
@@ -53,11 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
     .to('.loader-track', { scaleX: 0, opacity: 0, duration: 0.6, ease: 'power3.inOut', transformOrigin: 'right' })
     .to('.loader', { 
       yPercent: -100, 
-      duration: 1.5, 
-      ease: 'expo.inOut',
-      borderBottomLeftRadius: '50vw',
-      borderBottomRightRadius: '50vw'
-    }, "-=0.1")
+      duration: 1.2, 
+      ease: 'power4.inOut'
+    }, "-=0.2")
     .add(initHeroAnimations, "-=1.2"); // Start hero animation earlier for overlap
 
   // Hero Animations
@@ -65,16 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tlHero = gsap.timeline();
     
     tlHero
-      .to('.hero-img', { scale: 1, duration: 2.5, ease: 'power3.out' }, 0)
-      .to('.hero-title', { 
-        y: '0%', 
-        duration: 1.5, 
-        stagger: 0.15, 
-        ease: 'expo.out' 
-      }, "-=2.2")
+      .to('.hero-img', { scale: 1, duration: 2, ease: 'power3.out' }, 0)
+      .fromTo('.hero-title', 
+        { y: '100%', filter: 'blur(10px)' },
+        { y: '0%', filter: 'blur(0px)', duration: 1.4, stagger: 0.1, ease: 'expo.out' }, "-=1.5")
       .fromTo('.hero-subtitle', 
-        { y: 30, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 1, ease: 'power2.out' }, "-=0.8")
+        { y: 20, opacity: 0, filter: 'blur(5px)' }, 
+        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.2, ease: 'power2.out' }, "-=1.0")
       .fromTo('.scroll-line',
         { y: '-100%' },
         { y: '100%', duration: 1.5, repeat: -1, ease: 'power2.inOut' }, "-=0.5");
@@ -97,15 +100,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Reveal Text
   const revealTexts = document.querySelectorAll('.reveal-text > *');
   revealTexts.forEach(text => {
-    gsap.to(text, {
-      y: '0%',
-      duration: 1.2,
-      ease: 'expo.out',
-      scrollTrigger: {
-        trigger: text.parentElement,
-        start: 'top 90%',
+    gsap.fromTo(text, 
+      { y: '100%', filter: 'blur(10px)' },
+      {
+        y: '0%',
+        filter: 'blur(0px)',
+        duration: 1.2,
+        ease: 'expo.out',
+        scrollTrigger: {
+          trigger: text.parentElement,
+          start: 'top 90%',
+        }
       }
-    });
+    );
   });
 
   // Fade Up Elements
@@ -124,17 +131,45 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Horizontal Gallery Scroll
-  const galleryWrapper = document.querySelector('.gallery-wrapper');
-  if (galleryWrapper) {
-    gsap.to(galleryWrapper, {
-      xPercent: -50,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.gallery',
-        start: 'top 60%',
-        end: 'bottom top',
-        scrub: 1
-      }
+  let mm = gsap.matchMedia();
+  
+  mm.add("(min-width: 768px)", () => {
+    const galleryWrapper = document.querySelector('.gallery-wrapper');
+    if (galleryWrapper) {
+      gsap.to(galleryWrapper, {
+        xPercent: -50,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.gallery',
+          start: 'top 60%',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+    }
+  });
+
+  // Mobile Navigation Toggle
+  const navToggle = document.querySelector('.nav-toggle');
+  const navMenu = document.querySelector('.nav-menu');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('active');
+      navMenu.classList.toggle('active');
+      document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+    });
+
+    // Close menu when clicking a link
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (navMenu.classList.contains('active')) {
+          navToggle.classList.remove('active');
+          navMenu.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
     });
   }
 });
