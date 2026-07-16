@@ -4,8 +4,9 @@
 }
 
 .reveal-text > * {
-  /* Handled dynamically by GSAP for smoother loading */
-  will-change: transform, filter;
+  /* Optimize for GPU acceleration */
+  will-change: transform, opacity;
+  transform-origin: left top;
 }
 
 .fade-up {
@@ -36,8 +37,8 @@
   height: 100%;
   object-fit: cover;
   transform: scale(1.2);
-  will-change: transform;
-  filter: brightness(0.6);
+  will-change: transform, filter;
+  filter: brightness(0.6) blur(0px);
 }
 
 .hero-overlay {
@@ -94,6 +95,12 @@
 }
 
 /* Vision Section */
+.vision {
+  background-color: var(--color-bg);
+  position: relative;
+  z-index: 10;
+}
+
 .section-heading {
   font-size: clamp(3rem, 6vw, 6rem);
   line-height: 1;
@@ -155,6 +162,9 @@
 /* Gallery Horizontal */
 .gallery {
   overflow: hidden;
+  background-color: var(--color-bg);
+  position: relative;
+  z-index: 11;
 }
 
 .gallery-wrapper {
@@ -206,6 +216,9 @@
 /* Footer */
 .footer {
   border-top: 1px solid rgba(255,255,255,0.1);
+  background-color: var(--color-bg);
+  position: relative;
+  z-index: 12;
 }
 
 .footer-title {

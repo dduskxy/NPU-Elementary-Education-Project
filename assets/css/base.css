@@ -16,6 +16,7 @@
   box-sizing: border-box;
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
 ::-webkit-scrollbar {
@@ -26,6 +27,8 @@ html {
   font-size: 16px;
   background-color: var(--color-bg);
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling on mobile landscape */
+  text-size-adjust: 100%;
 }
 
 body {

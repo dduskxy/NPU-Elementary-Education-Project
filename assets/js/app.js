@@ -2,13 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // GSAP Plugins
   gsap.registerPlugin(ScrollTrigger);
 
+  // Mobile optimization: Prevent ScrollTrigger recalcs on address bar hide/show
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
   // Initialize Lenis Smooth Scroll
   const lenis = new Lenis({
-    lerp: 0.07, // Buttery smooth momentum
+    lerp: 0.025, // Ultra smooth, very fluid momentum
     wheelMultiplier: 1,
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
+    syncTouch: true,
+    touchMultiplier: 2
   });
 
   // Prevent scrollbar layout shift by keeping scrollbar but stopping scroll during load
@@ -71,13 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tlHero = gsap.timeline();
     
     tlHero
-      .to('.hero-img', { scale: 1, duration: 2, ease: 'power3.out' }, 0)
+      .to('.hero-img', { scale: 1.05, duration: 2.5, ease: 'power3.out' }, 0)
       .fromTo('.hero-title', 
-        { y: '100%', filter: 'blur(10px)' },
-        { y: '0%', filter: 'blur(0px)', duration: 1.4, stagger: 0.1, ease: 'expo.out' }, "-=1.5")
+        { yPercent: 120, opacity: 0, skewY: 5 },
+        { yPercent: 0, opacity: 1, skewY: 0, duration: 1.8, stagger: 0.15, ease: 'power4.out', force3D: true }, "-=1.5")
       .fromTo('.hero-subtitle', 
-        { y: 20, opacity: 0, filter: 'blur(5px)' }, 
-        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 1.2, ease: 'power2.out' }, "-=1.0")
+        { y: 25, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 1.4, ease: 'power2.out', force3D: true }, "-=1.2")
       .fromTo('.scroll-line',
         { y: '-100%' },
         { y: '100%', duration: 1.5, repeat: -1, ease: 'power2.inOut' }, "-=0.5");
@@ -86,14 +91,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Scroll Animations
   
   // Parallax Hero Background
+  // Cinematic Hero Parallax with Blur
+  // We apply parallax and blur to .hero-img for a fluid transition
   gsap.to('.hero-img', {
-    yPercent: 30,
+    yPercent: 15,
+    filter: 'brightness(0.3) blur(12px)',
     ease: 'none',
     scrollTrigger: {
       trigger: '.hero',
       start: 'top top',
       end: 'bottom top',
-      scrub: true
+      scrub: 1.5
     }
   });
 
@@ -101,12 +109,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const revealTexts = document.querySelectorAll('.reveal-text > *');
   revealTexts.forEach(text => {
     gsap.fromTo(text, 
-      { y: '100%', filter: 'blur(10px)' },
+      { yPercent: 120, opacity: 0, skewY: 3 },
       {
-        y: '0%',
-        filter: 'blur(0px)',
-        duration: 1.2,
-        ease: 'expo.out',
+        yPercent: 0,
+        opacity: 1,
+        skewY: 0,
+        duration: 1.6,
+        ease: 'power4.out',
+        force3D: true,
         scrollTrigger: {
           trigger: text.parentElement,
           start: 'top 90%',
@@ -118,16 +128,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fade Up Elements
   const fadeUps = document.querySelectorAll('.fade-up');
   fadeUps.forEach(el => {
-    gsap.to(el, {
-      y: 0,
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
+    gsap.fromTo(el, 
+      { y: 50, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1.4,
+        ease: 'power4.out',
+        force3D: true,
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+        }
       }
-    });
+    );
   });
 
   // Horizontal Gallery Scroll
@@ -135,18 +149,58 @@ document.addEventListener("DOMContentLoaded", () => {
   
   mm.add("(min-width: 768px)", () => {
     const galleryWrapper = document.querySelector('.gallery-wrapper');
+    const galleryItems = document.querySelectorAll('.gallery-item img');
+    
     if (galleryWrapper) {
+      // Horizontal Scroll Continuous
       gsap.to(galleryWrapper, {
         xPercent: -50,
         ease: 'none',
         scrollTrigger: {
           trigger: '.gallery',
-          start: 'top 60%',
+          start: 'top 80%',
           end: 'bottom top',
-          scrub: 1
+          scrub: 1.5 // Smoother deceleration
+        }
+      });
+      
+      // Gentle Parallax effect on images within gallery
+      gsap.to(galleryItems, {
+        xPercent: 15,
+        scale: 1.05,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.gallery',
+          start: 'top 90%',
+          end: 'bottom top',
+          scrub: 2 // Even slower for a dreamy feel
         }
       });
     }
+  });
+
+  // Navbar Animation (On Load)
+  gsap.fromTo('.nav', 
+    { y: '-100%', opacity: 0 },
+    { y: '0%', opacity: 1, duration: 1.5, ease: 'power3.out', delay: 0.5, force3D: true }
+  );
+
+  // Navbar Hide on Scroll Down, Show on Scroll Up
+  let lastScrollY = window.scrollY;
+  const navBar = document.querySelector('.nav');
+  lenis.on('scroll', (e) => {
+    if (e.animatedScroll > 100) {
+      if (e.animatedScroll > lastScrollY) {
+        // Scrolling down
+        gsap.to(navBar, { y: '-100%', duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+      } else {
+        // Scrolling up
+        gsap.to(navBar, { y: '0%', duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+      }
+    } else {
+      gsap.to(navBar, { y: '0%', duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+    }
+    lastScrollY = e.animatedScroll;
   });
 
   // Mobile Navigation Toggle
