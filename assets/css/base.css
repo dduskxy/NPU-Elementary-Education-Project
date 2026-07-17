@@ -40,6 +40,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.loading {
+  overflow: hidden;
+  height: 100vh;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-primary);
   font-weight: 500;
@@ -95,6 +100,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translateY(0);
 }
 .loader-track {
   width: 200px;

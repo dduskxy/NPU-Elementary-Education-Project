@@ -53,8 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial states to prevent jump
   gsap.set('.hero-img', { scale: 1.2 });
 
-  // Preloader Animation
+  // Preloader Animation Setup
   const tlLoader = gsap.timeline({
+    paused: true,
     onComplete: () => {
       document.body.classList.remove('loading');
       lenis.start(); // Re-enable scroll when loader finishes
@@ -70,6 +71,17 @@ document.addEventListener("DOMContentLoaded", () => {
       ease: 'power4.inOut'
     }, "-=0.2")
     .add(initHeroAnimations, "-=1.2"); // Start hero animation earlier for overlap
+
+  // Play loader only after everything (images/fonts) is fully loaded to prevent stutter
+  const playLoader = () => {
+    requestAnimationFrame(() => tlLoader.play());
+  };
+
+  if (document.readyState === 'complete') {
+    playLoader();
+  } else {
+    window.addEventListener('load', playLoader);
+  }
 
   // Hero Animations
   function initHeroAnimations() {
@@ -226,4 +238,36 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+
+  // Page Transition Exit Animation for smooth navigation
+  const links = document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"])');
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      // Don't intercept if modifier keys are pressed or different host
+      if (link.hostname !== window.location.hostname) return;
+      if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+      
+      e.preventDefault();
+      const targetUrl = link.href;
+      
+      // Stop scrolling during transition
+      lenis.stop();
+      
+      const exitTl = gsap.timeline({
+        onComplete: () => {
+          window.location.href = targetUrl;
+        }
+      });
+      
+      // Prepare loader for swipe up effect
+      gsap.set('.loader', { yPercent: 100 });
+      gsap.set('.loader-track', { scaleX: 0, opacity: 0 }); 
+      
+      exitTl.to('.loader', {
+        yPercent: 0,
+        duration: 0.8,
+        ease: 'power4.inOut'
+      });
+    });
+  });
 });
